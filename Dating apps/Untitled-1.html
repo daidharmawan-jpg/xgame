@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<!-- ============================================================================
+  💌 KENALANYUK — Landing Page "Dating & Social Connection"
+  ----------------------------------------------------------------------------
+  Pemilik website: SELURUH pengaturan (teks, video, nomor WhatsApp, Telegram,
+  warna, animasi) diatur dari SATU tempat: objek CONFIG di file script.js.
+  File ini tidak perlu diubah untuk pengaturan dasar.
+
+  Struktur file (siap upload ke hosting statis apa pun):
+    index.html              → struktur halaman (file ini)
+    style.css               → desain & responsivitas
+    script.js               → CONFIG + logika background/animasi/tautan
+    assets/                 → gambar cadangan, avatar ilustrasi, favicon
+============================================================================ -->
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+  <!-- Judul & deskripsi default (akan ditimpa otomatis oleh CONFIG.site) -->
+  <title>KenalanYuk — Dating &amp; Social Connection</title>
+  <meta name="description" content="Temukan teman baru dan bangun koneksi. Mulai percakapan hangat lewat WhatsApp atau Telegram." />
+  <meta name="theme-color" content="#150711" />
+
+  <!-- Open Graph (pratinjau saat link dibagikan) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="KenalanYuk — Dating &amp; Social Connection" />
+  <meta property="og:description" content="Temukan teman baru dan bangun koneksi. Mulai percakapan hangat lewat WhatsApp atau Telegram." />
+  <!-- Setelah online, ganti dengan URL absolut, contoh: https://domainmu.com/assets/fallback.png -->
+  <meta property="og:image" content="assets/fallback.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Favicon (hati bergradasi) -->
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+
+  <!-- Font modern: Playfair Display (judul elegan) + Plus Jakarta Sans (teks) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Desain & responsivitas -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Pesan untuk pengunjung yang mematikan JavaScript -->
+  <noscript>
+    <p style="padding:1rem;text-align:center;background:#ff4d79;color:#fff;font-family:sans-serif">
+      Aktifkan JavaScript pada browsermu untuk menikmati tampilan penuh website ini.
+    </p>
+  </noscript>
+
+  <!-- Tautan lompat untuk aksesibilitas -->
+  <a class="skip-link" href="#main">Langsung ke konten utama</a>
+
+  <!-- ═══════════ LAPISAN BACKGROUND (video + gambar cadangan + tirai) ═══════ -->
+  <div class="bg-wrap" aria-hidden="true">
+    <div class="bg-fallback" id="bgFallback"></div>
+    <!-- Video latar: autoplay, tanpa suara, berulang, memenuhi layar.
+         Sumber & pengaturannya dikendalikan dari CONFIG.background (script.js) -->
+    <video
+      id="bgVideo"
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="metadata"
+      disablepictureinpicture
+      tabindex="-1"
+    ></video>
+    <div class="bg-overlay"></div>
+  </div>
+
+  <!-- Hati kecil melayang (dekoratif; on/off lewat CONFIG.animation.floatingHearts) -->
+  <div class="hearts" aria-hidden="true">
+    <span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span>
+  </div>
+
+  <!-- ═══════════ LOADER (indikator saat video dimuat) ═══════════ -->
+  <div class="loader" id="loader" role="status" aria-live="polite">
+    <div class="loader-inner">
+      <div class="loader-heart">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+      </div>
+      <p class="loader-text" id="loaderText">Menyiapkan suasana yang hangat…</p>
+      <div class="loader-bar"><span></span></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ HEADER: LOGO & LENCANA USIA ═══════════ -->
+  <header class="site-header reveal" style="--i: 1">
+    <a class="brand" href="#" aria-label="Beranda">
+      <span class="brand-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+      </span>
+      <span class="brand-name" id="brandName">KenalanYuk</span>
+    </a>
+    <span class="age-badge glass">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+      </svg>
+      <span id="ageBadgeText">18+</span>
+    </span>
+  </header>
+
+  <!-- ═══════════ KONTEN UTAMA ═══════════ -->
+  <main id="main" class="hero">
+    <!-- Avatar ilustrasi dekoratif (ganti lewat CONFIG.avatars di script.js) -->
+    <div class="float-avatars" id="floatAvatars" aria-hidden="true"></div>
+
+    <section class="hero-card glass reveal" style="--i: 0" aria-label="Perkenalan">
+      <p class="eyebrow glass" id="eyebrow">✨ Dating &amp; Social Connection</p>
+
+      <!-- Judul & deskripsi diisi otomatis dari CONFIG.hero -->
+      <h1 class="hero-title" id="heroTitle">Temukan <em>Teman Baru</em> dan Bangun Koneksi</h1>
+      <p class="hero-desc" id="heroDesc"></p>
+
+      <!-- Tombol utama — tautan dibuat otomatis dari CONFIG.whatsapp & CONFIG.telegram -->
+      <div class="cta-group">
+        <a id="waBtn" class="btn btn-wa" href="#" target="_blank" rel="noopener noreferrer">
+          <!-- Ikon resmi WhatsApp -->
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+          </svg>
+          <span id="waLabel">Chat via WhatsApp</span>
+        </a>
+
+        <a id="tgBtn" class="btn btn-tg" href="#" target="_blank" rel="noopener noreferrer">
+          <!-- Ikon resmi Telegram -->
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+          </svg>
+          <span id="tgLabel">Gabung Telegram</span>
+        </a>
+      </div>
+
+      <!-- Chip keunggulan (isi lewat CONFIG.chips) -->
+      <div class="chips" id="chips"></div>
+
+      <!-- Informasi usia minimal 18 tahun -->
+      <p class="age-note">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+        </svg>
+        <span id="ageText">Layanan ini diperuntukkan bagi pengguna berusia 18 tahun ke atas.</span>
+      </p>
+    </section>
+  </main>
+
+  <!-- ═══════════ FOOTER (menempel di dasar layar) ═══════════ -->
+  <footer class="site-footer reveal" style="--i: 2">
+    <nav class="footer-links" aria-label="Tautan legal">
+      <button type="button" class="footer-link" data-modal="privacy">Kebijakan Privasi</button>
+      <span class="dot" aria-hidden="true">•</span>
+      <button type="button" class="footer-link" data-modal="terms">Syarat &amp; Ketentuan</button>
+    </nav>
+    <p class="copyright" id="copyright">© 2025 KenalanYuk — Semua hak dilindungi.</p>
+  </footer>
+
+  <!-- ═══════════ MODAL: KEBIJAKAN PRIVASI ═══════════ -->
+  <div class="modal" id="modal-privacy" role="dialog" aria-modal="true" aria-labelledby="modal-privacy-title" aria-hidden="true">
+    <div class="modal-card">
+      <button type="button" class="modal-close" aria-label="Tutup">✕</button>
+      <h2 id="modal-privacy-title">Kebijakan Privasi</h2>
+      <div class="modal-body" id="modal-privacy-body"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ MODAL: SYARAT & KETENTUAN ═══════════ -->
+  <div class="modal" id="modal-terms" role="dialog" aria-modal="true" aria-labelledby="modal-terms-title" aria-hidden="true">
+    <div class="modal-card">
+      <button type="button" class="modal-close" aria-label="Tutup">✕</button>
+      <h2 id="modal-terms-title">Syarat &amp; Ketentuan</h2>
+      <div class="modal-body" id="modal-terms-body"></div>
+    </div>
+  </div>
+
+  <!-- Konfigurasi & logika website -->
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,634 @@
+/* ============================================================================
+   💌 KENALANYUK — style.css
+   Landing Page "Dating & Social Connection"
+   ----------------------------------------------------------------------------
+   Catatan untuk pemilik website:
+   - Sebagian besar nilai (warna, ukuran, transparansi, kecepatan animasi)
+     dikendalikan dari objek CONFIG di script.js melalui CSS Variables di bawah.
+   - Anda TIDAK perlu mengedit file ini untuk pengaturan dasar.
+   ============================================================================ */
+
+/* ── 1) VARIABEL GLOBAL (nilai default — ditimpa oleh CONFIG di script.js) ── */
+:root {
+  /* Warna (diatur oleh CONFIG.colors) */
+  --accent: #ff4d79;                 /* warna aksen utama (hati, sorotan)   */
+  --accent-2: #ff8a5c;               /* warna aksen kedua (gradasi judul)   */
+  --text: #ffffff;                   /* warna teks utama                    */
+  --btn-wa: #25d366;                 /* tombol WhatsApp (hijau resmi WA)    */
+  --btn-tg: #229ed9;                 /* tombol Telegram (biru resmi TG)     */
+
+  /* Background (diatur oleh CONFIG.background) */
+  --overlay-rgb: 21 7 17;            /* warna tirai gelap (RGB tanpa alpha) */
+  --overlay-opacity: 0.55;           /* 0 = tanpa tirai … 1 = gelap penuh   */
+  --bg-brightness: 0.9;              /* kecerahan video/gambar (0.2 – 1.5)  */
+  --bg-blur: 0px;                    /* efek blur latar (contoh: 4px)       */
+  --fallback-image: url("assets/fallback.png"); /* gambar cadangan          */
+
+  /* Tipografi (diatur oleh CONFIG.hero) */
+  --title-size: clamp(2.2rem, 5.5vw, 4.2rem);
+  --desc-size: clamp(1.02rem, 2.1vw, 1.3rem);
+
+  /* Animasi (diatur oleh CONFIG.animation.speed) */
+  --d-fast: 0.35s;
+  --d-med: 0.8s;
+  --d-slow: 1.2s;
+  --stagger: 0.14s;
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  /* Turunan warna teks (mengikuti --text) */
+  --muted: rgba(255, 255, 255, 0.78);
+  --muted: color-mix(in srgb, var(--text) 78%, transparent);
+  --faint: rgba(255, 255, 255, 0.55);
+  --faint: color-mix(in srgb, var(--text) 55%, transparent);
+
+  /* Glassmorphism ringan */
+  --glass-bg: rgba(255, 255, 255, 0.07);
+  --glass-bg: color-mix(in srgb, var(--text) 7%, transparent);
+  --glass-border: rgba(255, 255, 255, 0.16);
+  --glass-border: color-mix(in srgb, var(--text) 16%, transparent);
+}
+
+/* ── 2) RESET & DASAR ────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  min-height: 100vh;      /* fallback browser lama */
+  min-height: 100svh;     /* tinggi layar dinamis (mobile) */
+  display: flex;
+  flex-direction: column;
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--text);
+  background: #150711;    /* warna dasar di balik video/gambar */
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+img, svg, video { display: block; max-width: 100%; }
+
+::selection { background: var(--accent); color: #fff; }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* Tautan lompat untuk aksesibilitas (screen reader / keyboard) */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  background: var(--accent);
+  color: #fff;
+  padding: 0.7rem 1.2rem;
+  border-radius: 0 0 14px 0;
+  font-weight: 700;
+  text-decoration: none;
+}
+.skip-link:focus { left: 0; }
+
+/* ── 3) LAPISAN BACKGROUND: VIDEO + GAMBAR CADANGAN + TIRAI GELAP ────────── */
+.bg-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: #150711;
+}
+
+/* Gambar cadangan — selalu tampil di belakang video (juga sebagai poster) */
+.bg-fallback {
+  position: absolute;
+  inset: 0;
+  background-image: var(--fallback-image);
+  background-size: cover;
+  background-position: var(--img-pos, center center);
+  filter: brightness(var(--bg-brightness)) blur(var(--bg-blur));
+  transform: scale(1.06); /* menyembunyikan tepi saat blur/zoom aktif */
+}
+
+/* Video latar utama — memenuhi layar, tidak bersuara, berulang */
+#bgVideo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;                    /* WAJIB: video memenuhi layar */
+  opacity: 0;                           /* fade-in halus saat siap */
+  filter: brightness(var(--bg-brightness)) blur(var(--bg-blur));
+  transform: scale(1.06);
+  transition: opacity var(--d-slow) var(--ease);
+}
+#bgVideo.is-ready { opacity: 1; }
+
+/* Tirai gelap transparan agar teks selalu mudah dibaca */
+.bg-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120% 90% at 50% 8%, transparent 42%, rgba(0, 0, 0, 0.28) 100%),
+    linear-gradient(
+      180deg,
+      rgb(var(--overlay-rgb) / calc(var(--overlay-opacity) * 0.9)) 0%,
+      rgb(var(--overlay-rgb) / var(--overlay-opacity)) 45%,
+      rgb(var(--overlay-rgb) / min(1, calc(var(--overlay-opacity) * 1.25))) 100%
+    );
+}
+
+/* ── 4) HATI KECIL MELAYANG (dekoratif, bisa dimatikan via CONFIG) ───────── */
+.hearts {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.hearts span {
+  position: absolute;
+  bottom: -6vh;
+  left: var(--x, 50%);
+  font-size: var(--s, 20px);
+  color: var(--accent);
+  opacity: 0;
+  animation: heartRise var(--t, 12s) linear infinite;
+  animation-delay: var(--dl, 0s);
+}
+.hearts span::after { content: "❤"; }
+.hearts span:nth-child(1) { --x: 6%;  --s: 22px; --t: 13s; --dl: 0s;   --o: 0.18; }
+.hearts span:nth-child(2) { --x: 18%; --s: 14px; --t: 16s; --dl: 2.5s; --o: 0.12; }
+.hearts span:nth-child(3) { --x: 32%; --s: 18px; --t: 14s; --dl: 5s;   --o: 0.15; }
+.hearts span:nth-child(4) { --x: 47%; --s: 12px; --t: 17s; --dl: 1.2s; --o: 0.10; }
+.hearts span:nth-child(5) { --x: 63%; --s: 20px; --t: 15s; --dl: 3.8s; --o: 0.16; }
+.hearts span:nth-child(6) { --x: 76%; --s: 13px; --t: 18s; --dl: 6.4s; --o: 0.11; }
+.hearts span:nth-child(7) { --x: 87%; --s: 24px; --t: 12s; --dl: 4.6s; --o: 0.19; }
+.hearts span:nth-child(8) { --x: 95%; --s: 15px; --t: 16s; --dl: 8s;   --o: 0.13; }
+
+@keyframes heartRise {
+  0%   { transform: translateY(0) rotate(-6deg);  opacity: 0; }
+  8%   { opacity: var(--o, 0.15); }
+  92%  { opacity: var(--o, 0.15); }
+  100% { transform: translateY(-112vh) rotate(10deg); opacity: 0; }
+}
+body.hearts-off .hearts { display: none; }
+
+/* ── 5) LOADER (indikator saat video dimuat) ─────────────────────────────── */
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  background: #150711;
+  transition: opacity var(--d-slow) var(--ease), visibility 0s linear var(--d-slow);
+}
+.loader.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.loader-inner { display: grid; justify-items: center; gap: 1.05rem; padding: 1rem; text-align: center; }
+.loader-heart svg {
+  width: 54px;
+  height: 54px;
+  color: var(--accent);
+  filter: drop-shadow(0 8px 22px rgba(255, 77, 121, 0.45));
+  animation: beat 1.15s ease-in-out infinite;
+}
+.loader-text { margin: 0; font-size: 0.95rem; font-weight: 600; color: var(--muted); }
+.loader-bar {
+  width: 172px;
+  height: 4px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+}
+.loader-bar span {
+  display: block;
+  height: 100%;
+  width: 42%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  animation: slide 1.2s ease-in-out infinite;
+}
+
+@keyframes beat {
+  0%, 100% { transform: scale(1); }
+  25%      { transform: scale(1.18); }
+  40%      { transform: scale(0.96); }
+  60%      { transform: scale(1.12); }
+}
+@keyframes slide {
+  0%   { transform: translateX(-130%); }
+  100% { transform: translateX(330%); }
+}
+
+/* ── 6) HEADER ───────────────────────────────────────────────────────────── */
+.site-header {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem clamp(1.1rem, 4vw, 2.4rem);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 44px;
+  text-decoration: none;
+  color: var(--text);
+  font-weight: 800;
+  font-size: 1.14rem;
+  letter-spacing: 0.02em;
+}
+.brand-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  box-shadow: 0 8px 20px -8px var(--accent);
+}
+.brand-icon svg { width: 18px; height: 18px; }
+
+.age-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.42rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.age-badge svg { width: 14px; height: 14px; color: var(--accent); }
+
+/* Efek kaca (glassmorphism ringan) — dipakai bersama */
+.glass {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(16px) saturate(1.25);
+  backdrop-filter: blur(16px) saturate(1.25);
+  border: 1px solid var(--glass-border);
+}
+
+/* ── 7) HERO (konten utama) ──────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  z-index: 1;
+  flex: 1 0 auto;
+  display: grid;
+  place-items: center;
+  padding: clamp(1.2rem, 3vw, 2.5rem);
+}
+
+.hero-card {
+  position: relative;
+  width: min(780px, 100%);
+  text-align: center;
+  padding: clamp(1.4rem, 3.5vw, 2.6rem);
+  border-radius: 28px;
+  box-shadow: 0 34px 90px -30px rgba(0, 0, 0, 0.65);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 0 1rem;
+  padding: 0.45rem 1.05rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.hero-title {
+  margin: 0 0 0.9rem;
+  font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  font-size: var(--title-size);
+  line-height: 1.14;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+/* Kata beraksen dalam judul: gunakan <em> pada CONFIG.hero.title */
+.hero-title em {
+  font-style: italic;
+  background: linear-gradient(92deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-desc {
+  margin: 0 auto 1.5rem;
+  max-width: 54ch;
+  font-size: var(--desc-size);
+  line-height: 1.68;
+  color: var(--muted);
+}
+
+/* ── 8) TOMBOL CTA (WhatsApp & Telegram) ─────────────────────────────────── */
+.cta-group {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.9rem;
+}
+
+.btn {
+  --btn: var(--accent);
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 56px;
+  padding: 0.95rem 1.9rem;
+  border-radius: 999px;                    /* sudut membulat penuh */
+  font-weight: 700;
+  font-size: 1.02rem;
+  letter-spacing: 0.2px;
+  text-decoration: none;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  background: var(--btn);
+  box-shadow: 0 12px 28px -12px var(--btn);
+  transition:
+    transform var(--d-fast) var(--ease),
+    box-shadow var(--d-fast) var(--ease),
+    filter var(--d-fast) var(--ease);
+}
+/* gradasi halus (browser modern) */
+@supports (background: color-mix(in srgb, red 50%, blue)) {
+  .btn {
+    background: linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--btn) 86%, #fff) 0%,
+      var(--btn) 52%,
+      color-mix(in srgb, var(--btn) 84%, #000) 100%
+    );
+    box-shadow:
+      0 14px 30px -12px color-mix(in srgb, var(--btn) 72%, transparent),
+      0 4px 14px -6px rgba(0, 0, 0, 0.35);
+  }
+}
+
+.btn svg { width: 22px; height: 22px; flex: none; }
+
+/* kilau lembut saat hover */
+.btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 32%, rgba(255, 255, 255, 0.35) 50%, transparent 66%);
+  transform: translateX(-130%);
+  transition: transform var(--d-med) var(--ease);
+  pointer-events: none;
+}
+
+.btn:hover {
+  transform: translateY(-3px) scale(1.015);
+  filter: saturate(1.08) brightness(1.04);
+}
+.btn:hover::before { transform: translateX(130%); }
+.btn:active { transform: translateY(-1px) scale(0.985); }
+
+.btn-wa { --btn: var(--btn-wa); }
+.btn-tg { --btn: var(--btn-tg); }
+
+/* ── 9) CHIP FITUR & CATATAN USIA ────────────────────────────────────────── */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.55rem;
+  margin-top: 1.3rem;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.95rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+  transition: background var(--d-fast) var(--ease), color var(--d-fast) var(--ease);
+}
+.chip:hover { color: var(--text); }
+.chip svg { width: 15px; height: 15px; color: var(--accent); flex: none; }
+
+.age-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 1.05rem 0 0;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--faint);
+}
+.age-note svg { width: 16px; height: 16px; color: var(--accent); flex: none; }
+
+/* ── 10) AVATAR ILUSTRASI MELAYANG (dekoratif — ganti lewat CONFIG.avatars) ─ */
+.float-avatars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.float-avatar {
+  position: absolute;
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 16px 34px -14px rgba(0, 0, 0, 0.6);
+  animation: floaty 6s ease-in-out infinite alternate;
+}
+.float-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.float-avatar:nth-child(1) { width: 86px; height: 86px; left: 4%;  top: 13%;  animation-delay: -1s; }
+.float-avatar:nth-child(2) { width: 68px; height: 68px; right: 5%; top: 17%;  animation-delay: -2.6s; }
+.float-avatar:nth-child(3) { width: 72px; height: 72px; left: 9%;  bottom: 13%; animation-delay: -4.2s; }
+.float-avatar:nth-child(4) { width: 90px; height: 90px; right: 7%; bottom: 15%; animation-delay: -5.4s; }
+
+@keyframes floaty {
+  from { transform: translateY(0) rotate(-2deg); }
+  to   { transform: translateY(-18px) rotate(2deg); }
+}
+
+/* ── 11) FOOTER (selalu menempel di bagian bawah layar) ─────────────────── */
+.site-footer {
+  position: relative;
+  z-index: 1;
+  margin-top: auto;               /* kunci: footer menempel di bawah */
+  text-align: center;
+  padding: 1.1rem clamp(1rem, 4vw, 2rem) calc(1.1rem + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+}
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+}
+.footer-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0.4rem 0.5rem;
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color var(--d-fast) var(--ease);
+}
+.footer-link:hover {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-underline-offset: 5px;
+}
+.footer-links .dot { color: var(--faint); user-select: none; }
+.copyright { margin: 0.3rem 0 0; font-size: 0.8rem; color: var(--faint); }
+
+/* ── 12) MODAL (Kebijakan Privasi / Syarat & Ketentuan) ──────────────────── */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  padding: 1.2rem;
+  background: rgba(8, 2, 6, 0.62);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--d-med) var(--ease), visibility 0s linear var(--d-med);
+}
+.modal.open {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity var(--d-med) var(--ease);
+}
+.modal-card {
+  position: relative;
+  width: min(600px, 100%);
+  max-height: min(80vh, 660px);
+  display: flex;
+  flex-direction: column;
+  padding: clamp(1.4rem, 3vw, 2.1rem);
+  border-radius: 24px;
+  background: rgba(28, 10, 21, 0.94);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 34px 90px -22px rgba(0, 0, 0, 0.7);
+  transform: translateY(16px) scale(0.97);
+  transition: transform var(--d-med) var(--ease);
+}
+.modal.open .modal-card { transform: none; }
+.modal-card h2 {
+  margin: 0 0 1rem;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.55rem;
+  font-weight: 700;
+}
+.modal-close {
+  position: absolute;
+  top: 0.9rem;
+  right: 0.9rem;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  color: var(--text);
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--d-fast) var(--ease), transform var(--d-fast) var(--ease);
+}
+.modal-close:hover { background: var(--accent); transform: rotate(90deg); }
+.modal-body {
+  overflow-y: auto;               /* daftar panjang bisa di-scroll */
+  max-height: 54vh;
+  padding-right: 0.5rem;
+}
+.modal-body p { margin: 0 0 0.85rem; font-size: 0.94rem; line-height: 1.7; color: var(--muted); }
+.modal-body p:last-child { margin-bottom: 0; }
+
+/* Scrollbar tipis & elegan */
+.modal-body::-webkit-scrollbar { width: 9px; }
+.modal-body::-webkit-scrollbar-track { background: transparent; }
+.modal-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 99px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+.modal-body::-webkit-scrollbar-thumb:hover { background: var(--accent); background-clip: content-box; }
+.modal-body { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.25) transparent; }
+
+/* ── 13) ANIMASI FADE-IN SAAT HALAMAN DIBUKA ─────────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  animation: fadeUp var(--d-med) var(--ease) forwards;
+  animation-delay: calc(0.15s + var(--i, 0) * var(--stagger));
+}
+@keyframes fadeUp { to { opacity: 1; transform: none; } }
+
+/* Animasi menunggu loader selesai dulu (dikendalikan script.js) */
+body.is-loading .reveal,
+body.is-loading .hearts span { animation-play-state: paused; }
+
+/* ── 14) RESPONSIF ───────────────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .float-avatars { display: none; }   /* avatar dekoratif hanya untuk layar lebar */
+}
+
+@media (max-width: 640px) {
+  .cta-group { flex-direction: column; align-items: stretch; }
+  .btn { width: 100%; }               /* tombol jadi satu kolom penuh di HP */
+  .hero-card { border-radius: 22px; }
+  .brand { font-size: 1.05rem; }
+}
+
+/* Layar pendek (HP landscape): rapatkan agar tetap muat satu layar */
+@media (max-height: 620px) {
+  .chips { display: none; }
+  .hero-card { padding-block: 1.2rem; }
+  .hero-title { margin-bottom: 0.5rem; }
+  .hero-desc { margin-bottom: 1.1rem; }
+  .age-note { margin-top: 0.8rem; }
+}
+
+/* Hormati preferensi pengguna yang mematikan animasi */
+@media (prefers-reduced-motion: reduce) {
+  .reveal { animation: none; opacity: 1; transform: none; }
+  .hearts, .float-avatar { animation: none; }
+  .hearts { display: none; }
+  .loader-heart svg, .loader-bar span { animation-duration: 3s; }
+  html { scroll-behavior: auto; }
+}
